@@ -1,0 +1,295 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "libdecimate.dylib"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"install",
+			"target_link_libraries",
+			"use_CGAL_GMP_support",
+			"CGAL_setup_CGAL_dependencies",
+			"CGAL_setup_target_dependencies",
+			"include",
+			"find_package",
+			"target_include_directories",
+			"target_compile_features"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt",
+			"/Users/taz/Desktop/dev/CGAL-6.0.1/cmake/modules/CGAL_SetupGMP.cmake",
+			"/Users/taz/Desktop/dev/CGAL-6.0.1/cmake/modules/CGAL_SetupCGALDependencies.cmake",
+			"/Users/taz/Desktop/dev/CGAL-6.0.1/cmake/modules/CGAL_setup_target_dependencies.cmake",
+			"/Users/taz/Desktop/dev/CGAL-6.0.1/lib/cmake/CGAL/CGALConfig.cmake",
+			"/Users/taz/Desktop/dev/CGAL-6.0.1/CGALConfig.cmake"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 89,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 128,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 113,
+				"parent" : 0
+			},
+			{
+				"command" : 7,
+				"file" : 0,
+				"line" : 82,
+				"parent" : 0
+			},
+			{
+				"file" : 5,
+				"parent" : 4
+			},
+			{
+				"command" : 6,
+				"file" : 5,
+				"line" : 6,
+				"parent" : 5
+			},
+			{
+				"file" : 4,
+				"parent" : 6
+			},
+			{
+				"command" : 5,
+				"file" : 4,
+				"line" : 192,
+				"parent" : 7
+			},
+			{
+				"command" : 4,
+				"file" : 3,
+				"line" : 3,
+				"parent" : 8
+			},
+			{
+				"command" : 3,
+				"file" : 2,
+				"line" : 88,
+				"parent" : 9
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 70,
+				"parent" : 10
+			},
+			{
+				"command" : 8,
+				"file" : 0,
+				"line" : 102,
+				"parent" : 0
+			},
+			{
+				"command" : 9,
+				"file" : 0,
+				"line" : 95,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g -std=gnu++17 -arch x86_64 -arch arm64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.0.sdk -fPIC"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 3,
+					"define" : "CGAL_USE_GMPXX=1"
+				},
+				{
+					"define" : "decimate_EXPORTS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 12,
+					"path" : "/Users/taz/Desktop/dev/decimate/build/_deps/lxsdk-src/include"
+				},
+				{
+					"backtrace" : 12,
+					"path" : "/Users/taz/Desktop/dev/decimate/../boost_1_87_0"
+				},
+				{
+					"backtrace" : 12,
+					"path" : "/Users/taz/Desktop/dev/decimate/../eigen-3.4.0"
+				},
+				{
+					"backtrace" : 12,
+					"isSystem" : true,
+					"path" : "/Users/taz/Desktop/dev/CGAL-6.0.1/include"
+				},
+				{
+					"backtrace" : 3,
+					"isSystem" : true,
+					"path" : "/usr/local/opt/gmp/include"
+				},
+				{
+					"backtrace" : 3,
+					"isSystem" : true,
+					"path" : "/usr/local/opt/mpfr/include"
+				},
+				{
+					"backtrace" : 3,
+					"isSystem" : true,
+					"path" : "/usr/local/include"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					13
+				],
+				"standard" : "17"
+			},
+			"sourceIndexes" : 
+			[
+				0,
+				1
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 3,
+			"id" : "lxsdk::@6890427a1f51a3e7e1df"
+		}
+	],
+	"id" : "decimate::@6890427a1f51a3e7e1df",
+	"install" : 
+	{
+		"destinations" : 
+		[
+			{
+				"backtrace" : 2,
+				"path" : "/Users/taz/Desktop/dev/decimate/build/DecimateKit/extra"
+			},
+			{
+				"backtrace" : 2,
+				"path" : "/Users/taz/Desktop/dev/decimate/build/DecimateKit/extra"
+			}
+		],
+		"prefix" : 
+		{
+			"path" : "/Users/taz/Desktop/dev/decimate/build/DecimateKit"
+		}
+	},
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "liblxsdk.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "/usr/local/opt/gmp/lib/libgmp.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "/usr/local/opt/gmp/lib/libgmpxx.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "/usr/local/opt/mpfr/lib/libmpfr.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 11,
+				"fragment" : "/usr/local/lib/libgmpxx.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "/usr/local/opt/gmp/lib/libgmp.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "/usr/local/opt/gmp/lib/libgmpxx.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 3,
+				"fragment" : "/usr/local/opt/mpfr/lib/libmpfr.a",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "decimate",
+	"nameOnDisk" : "libdecimate.dylib",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "source/decimate.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "source/tool.cpp",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "SHARED_LIBRARY"
+}

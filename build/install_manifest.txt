@@ -1,0 +1,2 @@
+/Users/taz/Desktop/dev/decimate/build/DecimateKit/index.cfg
+/Users/taz/Desktop/dev/decimate/build/DecimateKit/extra/libdecimate.dylib

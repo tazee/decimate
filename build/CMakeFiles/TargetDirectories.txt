@@ -1,0 +1,8 @@
+/Users/taz/Desktop/dev/decimate/build/CMakeFiles/lxsdk.dir
+/Users/taz/Desktop/dev/decimate/build/CMakeFiles/decimate.dir
+/Users/taz/Desktop/dev/decimate/build/CMakeFiles/edit_cache.dir
+/Users/taz/Desktop/dev/decimate/build/CMakeFiles/rebuild_cache.dir
+/Users/taz/Desktop/dev/decimate/build/CMakeFiles/list_install_components.dir
+/Users/taz/Desktop/dev/decimate/build/CMakeFiles/install.dir
+/Users/taz/Desktop/dev/decimate/build/CMakeFiles/install/local.dir
+/Users/taz/Desktop/dev/decimate/build/CMakeFiles/install/strip.dir
