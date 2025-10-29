@@ -1,4 +1,7 @@
 /.DS_Store
 /.cache
 /.vscode
+/.gitignore
 /CMakePresets.json
+/_build
+/build
