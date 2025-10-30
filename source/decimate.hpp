@@ -74,6 +74,7 @@ struct CDecimate
         CVerxID                     v0, v1, v2;
         CEdgeID                     edge;      // an edge
         bool                        deleted;   // triangle deleted flag
+        bool                        updated;   // triangle updated flag
     };
 
     struct CFace
@@ -107,12 +108,14 @@ struct CDecimate
     int    m_cost;
     int    m_preserveBoundary;
     int    m_preserveMaterial;
+    int    m_triple;
 
     CDecimate()
     {
         m_mode  = CDecimate::Ratio;
         m_ratio = 1.0;
         m_count = 0;
+        m_triple = 0;
 
         CLxUser_MeshService mesh_svc;
         m_pick      = mesh_svc.SetMode(LXsMARK_SELECT);
@@ -140,8 +143,8 @@ struct CDecimate
     LxResult        AddEdge(CVerxID v0, CVerxID v1, CTriangleID tri);
     LxResult        CollapseEdge(int verx0_index, int verx1_index, bool forward);
     CEdgeID         FetchEdge(CVerxID v0, CVerxID v1);
-
-    LxResult        GetPointsFromFace(CFace& face, std::vector<LXtPointID>& points);
+    bool            FaceIsUpdated(CFace& face);
+    LxResult        GetPointsFromFace(CFace& face, std::vector<LXtPointID>& points, unsigned int& rev);
     LxResult        ApplyMesh(CLxUser_Mesh& edit_mesh);
     LxResult        WriteMesh(CLxUser_Mesh& out_mesh);
 };

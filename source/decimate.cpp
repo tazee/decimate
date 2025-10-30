@@ -73,6 +73,7 @@ static void ConvertToCGALMesh(Surface_mesh& out_mesh, std::map<Surface_mesh::Edg
     upoly0.fromMesh(context->m_mesh);
     upoly1.fromMesh(context->m_mesh);
 
+    printf("Total edges in CGAL mesh: %lu material (%d)\n", static_cast<unsigned long>(out_mesh.number_of_edges()), context->m_preserveMaterial);
     for (auto e : out_mesh.edges())
     {
         // ここでは全てのエッジを非制約エッジとする例
@@ -276,6 +277,15 @@ LxResult CDecimate::DecimateMesh(CLxUser_Mesh& base_mesh)
         cv->new_pos[1] = p.y();
         cv->new_pos[2] = p.z();
     }
+    for (auto& tri : m_triangles)
+    {
+        if (tri->deleted)
+            continue;
+        if (tri->v0 == tri->v1 || tri->v1 == tri->v2 || tri->v2 == tri->v0)
+        {
+            tri->deleted = true;
+        }
+    }
     return LXe_OK;
 }
 
@@ -310,6 +320,8 @@ LxResult CDecimate::AddTriangle(LXtPolygonID pol, LXtPointID v0, LXtPointID v1, 
     tri->v1   = dv[1];
     tri->v2   = dv[2];
     tri->pol  = pol;
+    tri->updated = false;
+    tri->deleted = false;
 
     AddEdge(dv[0], dv[1], tri);
     AddEdge(dv[1], dv[2], tri);
@@ -334,6 +346,7 @@ LxResult CDecimate::AddEdge(CVerxID v0, CVerxID v1, CTriangleID tri)
     CEdgeID edge = m_edges.back();
     edge->v0 = v0;
     edge->v1 = v1;
+    edge->collapsed = false;
     edge->tris.push_back(tri);
 
     v0->edge.push_back(edge);
@@ -503,6 +516,7 @@ CDecimate::CVerxID CDecimate::AddVertex(LXtPointID vrt, LXtPolygonID pol, CTrian
     dv->tri   = tri;
     dv->index = static_cast<unsigned>(m_vertices.size()-1);
     dv->marks = LXiMARK_ANY;
+    dv->collapsed = false;
     m_vert.Select(vrt);
     LXtFVector pos;
     m_vert.Pos(pos);
@@ -622,7 +636,7 @@ LxResult CDecimate::BuildMesh(CLxUser_Mesh& base_mesh)
 //
 LxResult CDecimate::WriteMesh(CLxUser_Mesh& out_mesh)
 {
-    printf("Writing mesh with %zu vertices and %zu triangles\n", m_vertices.size(), m_triangles.size());
+    //printf("Writing mesh with %zu vertices and %zu triangles\n", m_vertices.size(), m_triangles.size());
     std::vector<LXtPointID> point_ids(m_vertices.size());
     m_vert.fromMesh(out_mesh);
     for (auto& v : m_vertices)
@@ -639,19 +653,20 @@ LxResult CDecimate::WriteMesh(CLxUser_Mesh& out_mesh)
         }
     }
     m_poly.fromMesh(out_mesh);
-    for (auto& face : m_faces)
+
+    for (auto& tri : m_triangles)
     {
-        std::vector<LXtPointID> points = {};
-        GetPointsFromFace(face.second, points);
-        m_poly.Select(face.first);
-        if (points.size() < 3)
+        if (tri->deleted)
             continue;
 
-        else if (EquivalentPoints(m_poly, points) == false)
-        {
-            LXtPolygonID new_pol;
-            m_poly.New(LXiPTYP_FACE, points.data(), static_cast<unsigned>(points.size()), 0, &new_pol);
-        }
+        unsigned int rev = 0;
+        LXtPointID points[3];
+        points[0] = point_ids[tri->v0->index];
+        points[1] = point_ids[tri->v1->index];
+        points[2] = point_ids[tri->v2->index];
+
+        LXtPolygonID new_pol;
+        m_poly.New(LXiPTYP_FACE, points, 3, rev, &new_pol);
     }
     return LXe_OK;
 }
@@ -689,6 +704,7 @@ LxResult CDecimate::CollapseEdge(int verx0_index, int verx1_index, bool forward)
                 tri->v1 = v0;
             if (tri->v2 == v1)
                 tri->v2 = v0;
+            tri->updated = true;
             v0->tris.push_back(tri);
         }
         for (auto& edge : v1->edge)
@@ -716,6 +732,7 @@ LxResult CDecimate::CollapseEdge(int verx0_index, int verx1_index, bool forward)
                 tri->v1 = v1;
             if (tri->v2 == v0)
                 tri->v2 = v1;
+            tri->updated = true;
             v1->tris.push_back(tri);
         }
         for (auto& edge : v0->edge)
@@ -765,26 +782,65 @@ LxResult CDecimate::ApplyMesh(CLxUser_Mesh& edit_mesh)
         else
             m_vert.SetPos(v->new_pos);
     }
-    for (auto& face : m_faces)
-    {
-        std::vector<LXtPointID> points = {};
-        GetPointsFromFace(face.second, points);
-        m_poly.Select(face.first);
-        if (points.size() < 3)
-            m_poly.Remove();
 
-        else if (EquivalentPoints(m_poly, points) == false)
+    if (m_triple)
+    {
+        for (auto& tri : m_triangles)
         {
-            m_poly.SetMarks(m_mark_done);
-            m_poly.SetVertexList(points.data(), static_cast<unsigned>(points.size()), 0);
+            if (tri->deleted)
+                continue;
+
+            unsigned int rev = 0;
+            LXtPointID point_ids[3];
+            point_ids[0] = tri->v0->vrt;
+            point_ids[1] = tri->v1->vrt;
+            point_ids[2] = tri->v2->vrt;
+
+            LXtPolygonID new_pol;
+            m_poly.NewProto(LXiPTYP_FACE, point_ids, 3, rev, &new_pol);
+        }
+        for (auto& face : m_faces)
+        {
+            m_poly.Select(face.first);
+            m_poly.Remove();
+        }
+    }
+    else
+    {
+        for (auto& face : m_faces)
+        {
+            unsigned int rev = 0;
+            std::vector<LXtPointID> points = {};
+            GetPointsFromFace(face.second, points, rev);
+            m_poly.Select(face.first);
+            if (points.size() < 3)
+                m_poly.Remove();
+
+            else if (FaceIsUpdated(face.second) == true)
+            {
+                m_poly.SetMarks(m_mark_done);
+                m_poly.SetVertexList(points.data(), static_cast<unsigned>(points.size()), rev);
+            }
         }
     }
     return LXe_OK;
 }
 
 
-LxResult CDecimate::GetPointsFromFace(CDecimate::CFace& face, std::vector<LXtPointID>& points)
+bool CDecimate::FaceIsUpdated(CDecimate::CFace& face)
 {
+    for (auto& tri : face.tris)
+    {
+        if (tri->updated || tri->deleted)
+            return true;
+    }
+    return false;
+}
+
+
+LxResult CDecimate::GetPointsFromFace(CDecimate::CFace& face, std::vector<LXtPointID>& points, unsigned int& rev)
+{
+    rev = 0;
     points.clear();
     for (auto& tri : face.tris)
     {
@@ -800,25 +856,55 @@ LxResult CDecimate::GetPointsFromFace(CDecimate::CFace& face, std::vector<LXtPoi
         {
             for (auto i = 0u; i < points.size(); i++)
             {
+                LXtPointID vrt = nullptr;
                 auto j = (i + 1) % points.size();
                 if (points[i] == tri->v1->vrt && points[j] == tri->v0->vrt)
                 {
-                    points.insert(points.begin() + j, tri->v2->vrt);
-                    break;
+                    vrt = tri->v2->vrt;
                 }
                 else if (points[i] == tri->v2->vrt && points[j] == tri->v1->vrt)
                 {
-                    points.insert(points.begin() + j, tri->v0->vrt);
-                    break;
+                    vrt = tri->v0->vrt;
                 }
                 else if (points[i] == tri->v0->vrt && points[j] == tri->v2->vrt)
                 {
-                    points.insert(points.begin() + j, tri->v1->vrt);
+                    vrt = tri->v1->vrt;
+                }
+                if (vrt != nullptr)
+                {
+                    points.insert(points.begin() + j, vrt);
                     break;
                 }
             }
         }
     }
+    if (points.size() > 2)
+    {
+        if (points.front() == points.back())
+            points.pop_back();
+    }
+#if 0
+    if (points.size() > 2)
+    {
+        LXtVector norm0;
+        m_poly.Select(face.tris[0]->pol);
+        m_poly.Normal(norm0);
+        LXtFVector a, b, c, norm1;
+        m_vert.Select(points[0]);
+        m_vert.Pos(a);
+        m_vert.Select(points[1]);
+        m_vert.Pos(b);
+        m_vert.Select(points.back());
+        m_vert.Pos(c);
+        LXx_VSUB(b, a);
+        LXx_VSUB(c, a);
+        LXx_VCROSS(norm1, b, c);
+        if (LXx_VDOT(norm0, norm1) < 0.0)
+        {
+            rev = 1;
+        }
+    }
+#endif
     return LXe_OK;
 }
 

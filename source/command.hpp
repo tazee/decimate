@@ -12,6 +12,19 @@
 #include <lxsdk/lxu_vector.hpp>
 #include <lxsdk/lxu_command.hpp>
 
+#define ATTRs_MODE   "mode"
+#define ATTRs_RATIO  "ratio"
+#define ATTRs_COUNT  "count"
+#define ATTRs_COST   "costStrategy"
+#define ATTRs_PREBND "preserveBoundary"
+#define ATTRs_PREMAT "preserveMaterial"
+
+#define ATTRa_MODE     0
+#define ATTRa_RATIO    1
+#define ATTRa_COUNT    2
+#define ATTRa_COST     3
+#define ATTRa_PREBND   4
+#define ATTRa_PREMAT   5
 
 class CCommand : public CLxBasicCommand
 {
@@ -22,6 +35,32 @@ public:
 
     CCommand()
     {
+        static const LXtTextValueHint decimate_mode[] = {
+            { CDecimate::Ratio, "ratio" }, 
+            { CDecimate::Count, "count" }, 
+            { 0, "=decimate_mode" }, 0
+        };
+        static const LXtTextValueHint decimate_cost[] = {
+            { CDecimate::Edge_Length, "Edge_Length" }, 
+            { CDecimate::Lindstrom_Turk, "Lindstrom_Turk" }, 
+            { CDecimate::Garland_Heckbert, "Garland_Heckbert" }, 
+            { 0, "=decimate_cost" }, 0
+        };
+
+        dyna_Add(ATTRs_MODE, LXsTYPE_INTEGER);
+        dyna_SetHint(ATTRa_MODE, decimate_mode);
+
+        dyna_Add(ATTRs_RATIO, LXsTYPE_PERCENT);
+
+        dyna_Add(ATTRs_COUNT, LXsTYPE_INTEGER);
+
+        dyna_Add(ATTRs_COST, LXsTYPE_INTEGER);
+        dyna_SetHint(ATTRa_COST, decimate_cost);
+
+        dyna_Add(ATTRs_PREBND, LXsTYPE_BOOLEAN);
+
+        dyna_Add(ATTRs_PREMAT, LXsTYPE_BOOLEAN);
+
         select_mode = msh_S.SetMode(LXsMARK_SELECT);
     }
 
@@ -53,6 +92,14 @@ public:
         CLxUser_LayerService    lyr_S;
         CLxUser_LayerScan       scan;
         unsigned                n;
+        CDecimate               dec;
+
+        dyna_Value(ATTRa_MODE).GetInt(&dec.m_mode);
+        dyna_Value(ATTRa_RATIO).GetFlt(&dec.m_ratio);
+        dyna_Value(ATTRa_COUNT).GetInt(&dec.m_count);
+        dyna_Value(ATTRa_COST).GetInt(&dec.m_cost);
+        dyna_Value(ATTRa_PREBND).GetInt(&dec.m_preserveBoundary);
+        dyna_Value(ATTRa_PREMAT).GetInt(&dec.m_preserveMaterial);
     
 		sel_scene.Get(scene);
     
@@ -62,13 +109,7 @@ public:
         for (auto i = 0u; i < n; i++)
         {
             scan.BaseMeshByIndex(i, base_mesh);
-            CDecimate dec;
-            dec.m_mode = CDecimate::Ratio;
-            dec.m_ratio = 0.5;
-            dec.m_count = 0;
-            dec.m_cost = CDecimate::Garland_Heckbert;
-            dec.m_preserveBoundary = 1;
-            dec.m_preserveMaterial = 1;
+
             dec.BuildMesh(base_mesh);
             dec.DecimateMesh(base_mesh);
 
@@ -82,5 +123,35 @@ public:
                 }
             }
         }
+    }
+
+    LxResult cmd_DialogInit(void)
+    {
+        if (LXxCMDARG_ISSET(dyna_GetFlags(ATTRa_MODE)) == false)
+        {
+            attr_SetInt(ATTRa_MODE, CDecimate::Ratio);
+        }
+        if (LXxCMDARG_ISSET(dyna_GetFlags(ATTRa_RATIO)) == false)
+        {
+            attr_SetFlt(ATTRa_RATIO, 1.0);
+        }
+        if (LXxCMDARG_ISSET(dyna_GetFlags(ATTRa_COUNT)) == false)
+        {
+            attr_SetInt(ATTRa_COUNT, 0);
+        }
+        if (LXxCMDARG_ISSET(dyna_GetFlags(ATTRa_COST)) == false)
+        {
+            attr_SetInt(ATTRa_COST, CDecimate::Lindstrom_Turk);
+        }
+        if (LXxCMDARG_ISSET(dyna_GetFlags(ATTRa_PREBND)) == false)
+        {
+            attr_SetInt(ATTRa_PREBND, 0);
+        }
+        if (LXxCMDARG_ISSET(dyna_GetFlags(ATTRa_PREMAT)) == false)
+        {
+            attr_SetInt(ATTRa_PREMAT, 0);
+        }
+
+        return LXe_OK;
     }
 };

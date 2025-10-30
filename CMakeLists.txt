@@ -122,6 +122,13 @@ target_link_libraries(decimate
 install(
     FILES
         "index.cfg"
+        "index.html"
+    DESTINATION
+        ${CMAKE_INSTALL_PREFIX}
+)
+install(
+    DIRECTORY
+        "images"
     DESTINATION
         ${CMAKE_INSTALL_PREFIX}
 )

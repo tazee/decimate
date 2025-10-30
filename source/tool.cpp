@@ -145,13 +145,29 @@ unsigned CTool::tmod_Flags()
 LxResult CTool::tmod_Enable(ILxUnknownID obj)
 {
     CLxUser_Message msg(obj);
+    unsigned int primary_index = 0;
 
-    if (TestPolygon() == false)
+    if (TestPolygon(primary_index) == false)
     {
         msg.SetCode(LXe_CMD_DISABLED);
         msg.SetMessage(SRVNAME_TOOL, "NoPolygon", 0);
         return LXe_DISABLED;
     }
+
+	CLxUser_LayerService _lyr_svc;
+	CLxSceneSelection	 scene_sel;
+	CLxUser_Scene		 scene;
+
+	scene_sel.Get (scene);
+	if (scene.test ())
+		_lyr_svc.SetScene (scene);
+
+	if (_lyr_svc.IsProcedural (primary_index) == LXe_TRUE)
+	{
+        msg.SetCode(LXe_CMD_DISABLED);
+        msg.SetMessage(SRVNAME_TOOL, "proceduralMesh", 0);
+        return LXe_DISABLED;
+	}
     return LXe_OK;
 }
 
@@ -162,8 +178,8 @@ LxResult CTool::tmod_Down(ILxUnknownID vts, ILxUnknownID adjust)
 	LXpToolActionCenter* acen = (LXpToolActionCenter *) vec.Read (offset_center);
 	LXpToolInputEvent*   ipkt = (LXpToolInputEvent *) vec.Read (offset_input);
 
-	CLxUser_EventTranslatePacket epkt;
-	vec.ReadObject (offset_event, epkt);
+    dyna_Value(ATTRa_RATIO).GetFlt(&m_ratio0);
+    dyna_Value(ATTRa_COUNT).GetInt(&m_count0);
 
     return LXe_TRUE;
 }
@@ -173,11 +189,28 @@ void CTool::tmod_Move(ILxUnknownID vts, ILxUnknownID adjust)
     CLxUser_AdjustTool at(adjust);
     CLxUser_VectorStack vec(vts);
     LXpToolScreenEvent*  spak = static_cast<LXpToolScreenEvent*>(vec.Read(offset_screen));
-	LXpToolActionCenter* acen = (LXpToolActionCenter *) vec.Read (offset_center);
-	LXpToolInputEvent*   ipkt = (LXpToolInputEvent *) vec.Read (offset_input);
 
-	CLxUser_EventTranslatePacket epkt;
-	vec.ReadObject (offset_event, epkt);
+    int mode;
+    dyna_Value(ATTRa_MODE).GetInt(&mode);
+
+    if (mode == CDecimate::Count)
+    {
+        double delta = spak->cx - spak->px;
+        int count = m_count0 + static_cast<int>(delta * 0.1);
+        if (count < 0)
+            count = 0;
+        at.SetInt(ATTRa_COUNT, count);
+    }
+    else if (mode == CDecimate::Ratio)
+    {
+        double delta = spak->cx - spak->px;
+        double ratio = m_ratio0 - delta * 0.001;
+        if (ratio < 0.0)
+            ratio = 0.0;
+        if (ratio > 1.0)
+            ratio = 1.0;
+        at.SetFlt(ATTRa_RATIO, ratio);
+    }
 }
 
 void CTool::tmod_Up(ILxUnknownID vts, ILxUnknownID adjust)
@@ -229,7 +262,7 @@ LxResult CTool::atrui_DisableMsg (unsigned int index, ILxUnknownID msg)
     return LXe_OK;
 }
 
-bool CTool::TestPolygon()
+bool CTool::TestPolygon(unsigned int& primary_index)
 {
     /*
      * Start the scan in read-only mode.
@@ -238,6 +271,8 @@ bool CTool::TestPolygon()
     CLxUser_Mesh      mesh;
     unsigned          i, n, count;
     bool              ok = false;
+
+    primary_index = 0;
 
     s_layer.BeginScan(LXf_LAYERSCAN_ACTIVE | LXf_LAYERSCAN_MARKPOLYS, scan);
 
@@ -254,6 +289,7 @@ bool CTool::TestPolygon()
             if (count > 0)
             {
                 ok = true;
+                primary_index = i;
                 break;
             }
         }
@@ -369,25 +405,6 @@ LxResult CToolOp::top_Evaluate(ILxUnknownID vts)
     }
 
     scan.Apply();
-#if 0
-	CLxSceneSelection       sel_scene;
-    CLxUser_Scene           scene;
-    CLxUser_Item            meshItem;
-    CLxUser_Mesh		    new_mesh;
-    unsigned		        index;
-	CLxUser_ChannelWrite    chanWrite;
-
-	sel_scene.Get(scene);
-    scene.NewItem(LXsTYPE_MESH, meshItem);
-
-    if (LXx_OK (meshItem.ChannelLookup (LXsICHAN_MESH_MESH, &index))) {
-        meshItem.GetContext (scene);
-        scene.SetChannels (chanWrite, LXs_ACTIONLAYER_EDIT, 0.0);
-        if (chanWrite.Object (meshItem, index, new_mesh)) {
-            dec.WriteMesh(new_mesh);
-        }
-    }
-#endif
     return LXe_OK;
 }
 

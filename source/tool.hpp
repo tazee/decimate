@@ -111,7 +111,7 @@ public:
     LxResult    cui_DependencyCount   (const char *channelName, unsigned *count) LXx_OVERRIDE;
     LxResult    cui_DependencyByIndex (const char *channelName, unsigned index, LXtItemType *depItemType, const char **depChannelName) LXx_OVERRIDE;
 
-    bool TestPolygon();
+    bool TestPolygon(unsigned int& primary_index);
 
     CLxUser_LogService   s_log;
     CLxUser_LayerService s_layer;
