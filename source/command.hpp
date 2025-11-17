@@ -110,7 +110,6 @@ public:
         {
             scan.BaseMeshByIndex(i, base_mesh);
 
-            dec.BuildMesh(base_mesh);
             dec.DecimateMesh(base_mesh);
 
             scene.NewItem(LXsTYPE_MESH, meshItem);
@@ -119,7 +118,7 @@ public:
                 meshItem.GetContext (scene);
                 scene.SetChannels (chanWrite, LXs_ACTIONLAYER_EDIT, 0.0);
                 if (chanWrite.Object (meshItem, index, new_mesh)) {
-                    dec.WriteMesh(new_mesh);
+                    dec.m_cmesh.WriteMesh(new_mesh);
                 }
             }
         }

@@ -399,7 +399,7 @@ LxResult CToolOp::top_Evaluate(ILxUnknownID vts)
         scan.EditMeshByIndex(i, edit_mesh);
 
         dec.DecimateMesh(base_mesh);
-        dec.ApplyMesh(edit_mesh);
+        dec.m_cmesh.ApplyMesh(edit_mesh, dec.m_triple);
 
         scan.SetMeshChange(i, LXf_MESHEDIT_GEOMETRY);
     }
